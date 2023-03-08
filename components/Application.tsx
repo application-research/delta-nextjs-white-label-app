@@ -97,7 +97,10 @@ export default function Application(props) {
           );
         })
       ) : (
-        <div className={styles.deal}>Loading...</div>
+        <div className={styles.deal}>
+          <span className={styles.spinner2} />
+          &nbsp;Loading all of the data ...
+        </div>
       )}
     </DefaultLayout>
   );

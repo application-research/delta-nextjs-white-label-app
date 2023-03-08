@@ -43,3 +43,23 @@
     padding-left: 16px;
   }
 }
+
+.spinner2 {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  border: 1px solid #000000;
+  border-top: 2px solid #fff;
+  display: inline-block;
+  animation: rotating-spinner 1s linear infinite;
+}
+
+@keyframes rotating-spinner {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
