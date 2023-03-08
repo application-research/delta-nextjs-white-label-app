@@ -48,19 +48,21 @@ export default function Application(props) {
     init();
   }, []);
 
-  console.log(balance);
-
   return (
     <DefaultLayout appTitle={props.name} appVersion={PackageJSON.version}>
-      <Row label="Filecoin address">{balance.account}</Row>
-      <Row label="Filecoin balance">{Filecoin.convertAttoFILtoFIL(balance.balance)} FIL</Row>
-      <Row label="Datacap balance">{Utilities.bytesToSize(balance.verified_client_balance)}</Row>
-      <Row label="Total end-to-end deals">{info.total_e2e_deals}</Row>
-      <Row label="Total end-to-end size">{Utilities.bytesToSize(info.total_e2e_deals_in_bytes)}</Row>
-      <Row label="Total import deals">{info.total_import_deals}</Row>
-      <Row label="Total import deals in bytes">{Utilities.bytesToSize(info.total_import_deals_in_bytes)}</Row>
-      <Row label="Total sealed">{Utilities.bytesToSize(info.total_sealed_deal_in_bytes)}</Row>
-      <Row label="Total storage providers">{info.total_miners}</Row>
+      {info.total_e2e_deals ? (
+        <React.Fragment>
+          <Row label="Filecoin address">{balance.account}</Row>
+          <Row label="Filecoin balance">{Filecoin.convertAttoFILtoFIL(balance.balance)} FIL</Row>
+          <Row label="Datacap balance">{Utilities.bytesToSize(balance.verified_client_balance)}</Row>
+          <Row label="Total end-to-end deals">{info.total_e2e_deals}</Row>
+          <Row label="Total end-to-end size">{Utilities.bytesToSize(info.total_e2e_deals_in_bytes)}</Row>
+          <Row label="Total import deals">{info.total_import_deals}</Row>
+          <Row label="Total import deals in bytes">{Utilities.bytesToSize(info.total_import_deals_in_bytes)}</Row>
+          <Row label="Total sealed">{Utilities.bytesToSize(info.total_sealed_deal_in_bytes)}</Row>
+          <Row label="Total storage providers">{info.total_miners}</Row>
+        </React.Fragment>
+      ) : null}
       <Pages
         total={info.total_e2e_deals + info.total_import_deals}
         count={DEALS_PER_PAGE}
