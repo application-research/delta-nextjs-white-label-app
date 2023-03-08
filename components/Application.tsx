@@ -7,11 +7,17 @@ import styles from '@components/Application.module.scss';
 import * as React from 'react';
 import * as HTTP from '@common/http';
 import * as Utilities from '@common/utilities';
+import * as Filecoin from '@common/filecoin';
 
 import PackageJSON from '@root/package.json';
 import DefaultLayout from '@components/DefaultLayout';
+import RenderedDeals from '@components/RenderedDeals';
+import Pages from '@components/Pages';
 
 import Input from '@components/Input';
+
+const DEALS_PER_PAGE = 2500;
+const STARTING_PAGE = 1;
 
 const Row = (props) => {
   return (
@@ -26,82 +32,47 @@ export default function Application(props) {
   const [balance, setBalance] = React.useState({});
   const [deals, setDeals] = React.useState([]);
   const [info, setInfo] = React.useState({});
+  const [selected, setSelected] = React.useState(1);
 
   React.useEffect(() => {
     async function init() {
       const nextBalance = await HTTP.getBalance({ host: props.host, address: 'f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi' });
-      const nextDeals = await HTTP.getAllDeals({ host: props.host });
       const nextInfo = await HTTP.getInfo({ host: props.host });
+      const nextDeals = await HTTP.getDeals({ host: props.host, page: STARTING_PAGE, count: DEALS_PER_PAGE });
+      setDeals(nextDeals);
 
       setBalance(nextBalance);
-      setDeals(nextDeals);
       setInfo(nextInfo);
     }
 
     init();
   }, []);
 
+  console.log(balance);
+
   return (
     <DefaultLayout appTitle={props.name} appVersion={PackageJSON.version}>
       <Row label="Filecoin address">{balance.account}</Row>
-      <Row label="Filecoin balance attoFIL">{balance.balance}</Row>
+      <Row label="Filecoin balance">{Filecoin.convertAttoFILtoFIL(balance.balance)} FIL</Row>
+      <Row label="Datacap balance">{Utilities.bytesToSize(balance.verified_client_balance)}</Row>
       <Row label="Total end-to-end deals">{info.total_e2e_deals}</Row>
       <Row label="Total end-to-end size">{Utilities.bytesToSize(info.total_e2e_deals_in_bytes)}</Row>
       <Row label="Total import deals">{info.total_import_deals}</Row>
       <Row label="Total import deals in bytes">{Utilities.bytesToSize(info.total_import_deals_in_bytes)}</Row>
       <Row label="Total sealed">{Utilities.bytesToSize(info.total_sealed_deal_in_bytes)}</Row>
       <Row label="Total storage providers">{info.total_miners}</Row>
-      {deals.length ? (
-        deals.map((each) => {
-          return (
-            <div className={styles.deal} key={each.ID} style={each.failed ? { color: 'red' } : null}>
-              <div className={styles.property}>{each.ID}</div>
-              <div className={styles.sub}>
-                <strong>↳ CID</strong>
-                {each.propCid}
-              </div>
-              <div className={styles.sub}>
-                <strong>↳ content ID</strong>
-                {each.content}
-              </div>
-              {each.dealId > 0 ? (
-                <div className={styles.sub}>
-                  <strong>↳ deal ID</strong>
-                  {each.dealId}
-                </div>
-              ) : null}
-              <div className={styles.sub}>
-                <strong>↳ deal UUID</strong>
-                {each.dealUuid}
-              </div>
-              <div className={styles.sub}>
-                <strong>↳ protocol version</strong>
-                {each.deal_protocol_version}
-              </div>
-              <div className={styles.sub}>
-                <strong>↳ storage provider</strong>
-                {each.miner}
-              </div>
-              {each.failed ? (
-                <div className={styles.sub}>
-                  <strong>↳ failed at</strong>
-                  {each.failedAt}
-                </div>
-              ) : (
-                <div className={styles.sub} style={{ color: '#25d366' }}>
-                  <strong>↳ on chain at</strong>
-                  {each.onChainAt}
-                </div>
-              )}
-            </div>
-          );
-        })
-      ) : (
-        <div className={styles.deal}>
-          <span className={styles.spinner2} />
-          &nbsp;Loading all of the data ...
-        </div>
-      )}
+      <Pages
+        total={info.total_e2e_deals + info.total_import_deals}
+        count={DEALS_PER_PAGE}
+        selected={selected}
+        onSetDeals={async (page) => {
+          setSelected(page);
+          setDeals([]);
+          const nextDeals = await HTTP.getDeals({ host: props.host, page, count: DEALS_PER_PAGE });
+          setDeals(nextDeals);
+        }}
+      />
+      <RenderedDeals deals={deals} />
     </DefaultLayout>
   );
 }
