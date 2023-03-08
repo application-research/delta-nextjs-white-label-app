@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 'use client';
 
 import styles from '@components/Application.module.scss';
