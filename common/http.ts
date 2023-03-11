@@ -18,7 +18,7 @@ export async function placeholder(key) {
 }
 
 export const getBalance = async ({ address, host }) => {
-  const response = await fetch(`https://${host}/admin/wallet/balance/${address}`);
+  const response = await fetch(`https://${host}/open/info/wallet/balance/${address}`);
   const json = await response.json();
   return json.balance;
 };
